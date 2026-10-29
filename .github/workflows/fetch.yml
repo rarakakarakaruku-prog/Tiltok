@@ -1,0 +1,27 @@
+name: fetch-audio
+on:
+  push:
+    paths: ["urls.txt"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download audio
+        run: |
+          mkdir -p audio
+          while read -r id url; do
+            [ -z "$id" ] && continue
+            curl -fsSL -o "audio/$id.mp3" "$url"
+          done < urls.txt
+          ls -la audio
+      - name: Commit
+        run: |
+          git config user.name "audio-bot"
+          git config user.email "audio-bot@users.noreply.github.com"
+          git add audio
+          git commit -m "Add downloaded audio" || echo "nothing"
+          git push
